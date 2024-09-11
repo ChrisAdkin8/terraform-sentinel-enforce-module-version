@@ -2,7 +2,7 @@ import "json"
 
 # Define the expected module versions
 expected_versions = {
-    "ssm1": "1.0.1",
+    "ssm1": "1.0.0",
     "env" : "1.0.0"
 }
 
