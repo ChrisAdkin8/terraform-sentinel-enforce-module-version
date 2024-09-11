@@ -1,27 +1,9 @@
-import "json"
+import "tfplan"
 
-# Define the expected module versions
-expected_versions = {
-    "ssm1": "1.0.0",
-    "env" : "1.0.0"
-}
-
-# Parse the JSON output
-modules = json.unmarshal(input)
-
-# Function to check module versions
-check_module_versions = func() {
-    for module in modules {
-        if module["module"] in expected_versions {
-            if module["version"] != expected_versions[module["module"]] {
-                return false
-            }
-        }
-    }
-    return true
-}
-
-# Main rule to enforce the policy
 main = rule {
-    check_module_versions()
+  all tfplan.module_paths as path {
+    all tfplan.module(path).outputs as output {
+      output.key is "ssm1" and output.version is "1.0.0"
+    }
+  }
 }
