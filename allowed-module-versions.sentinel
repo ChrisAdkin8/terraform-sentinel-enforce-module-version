@@ -1,12 +1,24 @@
-import "tfplan/v3" as tfplan
+import "tfplan"
 
-# Define the main rule
-main = rule {
-  all tfplan.module_paths as module_path {
-    all tfplan.module(module_path).resources as resource {
-      resource.type is "module" and
-      resource.name is "ssm1" and
-      resource.version is "1.0.0"
+# Define a rule to check the version of the ssm1 module
+ssm1_version_check = func() {
+    # Access the modules from the Terraform plan
+    modules = tfplan.module_paths
+
+    # Iterate over each module to find the ssm1 module
+    for module in modules {
+        # Check if the module key is "ssm1"
+        if module["Key"] == "ssm1" {
+            # Check if the version is "1.0.0"
+            return module["Version"] == "1.0.0"
+        }
     }
-  }
+
+    # If the ssm1 module is not found, return false
+    return false
+}
+
+# Main rule to enforce the policy
+main = rule {
+    ssm1_version_check()
 }
