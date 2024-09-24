@@ -1,24 +1,34 @@
-import "tfplan"
+import "tfplan/v2" as tfplan
+import "collection/maps" as maps
 
-# Define a rule to check the version of the ssm1 module
-ssm1_version_check = func() {
-    # Access the modules from the Terraform plan
-    modules = tfplan.module_paths
+expected_version = "1.0.0"
 
-    # Iterate over each module to find the ssm1 module
-    for module in modules {
-        # Check if the module key is "ssm1"
-        if module["Key"] == "ssm1" {
-            # Check if the version is "1.0.0"
-            return module["Version"] == "1.0.0"
-        }
-    }
+all_modules = tfplan.planned_values.outputs.env_name.value.Modules
 
-    # If the ssm1 module is not found, return false
-    return false
+check_modules = func() {
+	// Assume true, until we find a module that fails
+	pass = true
+
+	for all_modules as _, module {
+		if (module.Key != "ssm1") {
+			print("ignoring", module.Key, "(don't care about this module)")
+			continue
+		}
+
+		if !maps.has(module, "Version") {
+			print("ignoring", module.Key, "(no version)")
+			continue
+		}
+
+		if (module.Version != expected_version) {
+			print("module with wrong version", module.Key, module.Version, "expected", expected_version)
+			pass = false
+		}
+	}
+
+	return pass
 }
 
-# Main rule to enforce the policy
 main = rule {
-    ssm1_version_check()
+	check_modules()
 }
