@@ -1,9 +1,12 @@
 import "tfplan"
 
+# Define the main rule
 main = rule {
-  all tfplan.module_paths as path {
-    all tfplan.module(path).outputs as output {
-      output.key is "ssm1" and output.version is "1.0.0"
-    }
+  # Iterate over the modules in the Terraform plan
+  all tfplan.module_paths as module_path {
+    # Check if the module is ssm1
+    module_path == "ssm1" and
+    # Ensure the version is exactly 1.0.0
+    tfplan.module(module_path).version == "1.0.0"
   }
 }
